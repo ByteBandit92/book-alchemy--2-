@@ -1,0 +1,62 @@
+# Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment directories
+venv/
+ENV/
+env/
+*.egg-info/
+
+# Flask and application-related files
+instance/
+*.sqlite3
+*.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Configuration files (Optional - you can remove these if you want to track them)
+*.env
+*.flaskenv
+
+# Jupyter Notebooks (if you are using them for experimentation)
+.ipynb_checkpoints/
+
+# Test output directories
+coverage/
+nosetests.xml
+coverage.xml
+*.cover
+*.tox
+*.nox
+*.hypothesis
+
+# Dependency directories
+node_modules/
+
+# Python packages
+*.egg
+.eggs/
+
+# Distribution / packaging
+dist/
+build/
+*.tar.gz
+*.whl
+
+# User-specific files
+*.sublime-workspace
+*.sublime-project
