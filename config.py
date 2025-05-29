@@ -1,4 +1,4 @@
 # config.py
 class Config:
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///library.db'
+    SQLALCHEMY_DATABASE_URI = ''
     SQLALCHEMY_TRACK_MODIFICATIONS = False

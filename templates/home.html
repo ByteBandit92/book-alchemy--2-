@@ -10,13 +10,31 @@
 <body class="bg-light">
     <div class="container py-5">
         <h1 class="mb-4 text-center">📚 Library Books</h1>
-
         <!-- Search Form -->
         <form method="GET" action="/" class="input-group mb-4">
-            <input type="text" name="search" class="form-control" placeholder="Search for a book">
+            <input type="text" name="search" class="form-control" placeholder="Search for a book" value="{{ search }}">
+            <select name="search_by" class="form-select">
+                <option value="title" {% if search_by == 'title' %}selected{% endif %}>Title</option>
+                <option value="isbn" {% if search_by == 'isbn' %}selected{% endif %}>ISBN</option>
+            </select>
+            <input type="hidden" name="sort" value="{{ sort }}">
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
-
+        <!-- Sorting Buttons -->
+        <div class="d-flex justify-content-center mb-3 gap-2">
+            <a href="{{ url_for('home', search=search, sort='year_asc') }}" class="btn btn-outline-primary {% if sort == 'year_asc' %}active{% endif %}">
+                Year ↑
+            </a>
+            <a href="{{ url_for('home', search=search, sort='year_desc') }}" class="btn btn-outline-primary {% if sort == 'year_desc' %}active{% endif %}">
+                Year ↓
+            </a>
+            <a href="{{ url_for('home', search=search, sort='author_asc') }}" class="btn btn-outline-primary {% if sort == 'author_asc' %}active{% endif %}">
+                Author A-Z
+            </a>
+            <a href="{{ url_for('home', search=search, sort='author_desc') }}" class="btn btn-outline-primary {% if sort == 'author_desc' %}active{% endif %}">
+                Author Z-A
+            </a>
+        </div>
         <!-- Flash Messages (optional, if using flash) -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
