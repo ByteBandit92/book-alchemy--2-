@@ -1,6 +1,6 @@
 # app.py
 import os
-from flask import Flask, render_template, request, redirect, url_for,flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 from data_models import db, Author, Book
 from datetime import datetime
 from flask_migrate import Migrate
@@ -15,11 +15,14 @@ app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# Home route to display all books
 @app.route('/', methods=['GET'])
 def home():
+    """
+    Home page route. Displays all books with optional search and sorting.
+    Search can be by title or ISBN. Sorting by title, year, or author.
+    """
     search = request.args.get('search', '')
-    search_by = request.args.get('search_by', 'title')  # default to title search
+    search_by = request.args.get('search_by', 'title')
     sort = request.args.get('sort', '')
 
     books_query = Book.query.join(Author)
@@ -27,10 +30,9 @@ def home():
     if search:
         if search_by == 'isbn':
             books_query = books_query.filter(Book.isbn.ilike(f'%{search}%'))
-        else:  # default search by title
+        else:
             books_query = books_query.filter(Book.title.ilike(f'%{search}%'))
 
-    # Sorting logic remains the same
     if sort == 'year_asc':
         books_query = books_query.order_by(Book.publication_year.asc())
     elif sort == 'year_desc':
@@ -43,24 +45,26 @@ def home():
         books_query = books_query.order_by(Book.title.asc())
 
     books = books_query.all()
-
     return render_template('home.html', books=books, search=search, sort=sort, search_by=search_by)
 
-# Add Author
 @app.route('/add_author', methods=['GET', 'POST'])
 def add_author():
+    """
+    Route to add a new author.
+    Accepts POST request with form data:
+    - name (str)
+    - birth_date (optional, YYYY-MM-DD)
+    - date_of_death (optional, YYYY-MM-DD)
+    """
     if request.method == 'POST':
-        name = request.form['name']
+        name = request.form['name'].strip()
 
         try:
-            # Convert birth_date string to date object
-            birth_date = datetime.strptime(request.form['birth_date'], '%Y-%m-%d').date()
+            birth_date_str = request.form.get('birth_date', '').strip()
+            birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date() if birth_date_str else None
 
-            date_of_death_str = request.form.get('date_of_death', None)
-            if date_of_death_str:
-                date_of_death = datetime.strptime(date_of_death_str, '%Y-%m-%d').date()
-            else:
-                date_of_death = None
+            date_of_death_str = request.form.get('date_of_death', '').strip()
+            date_of_death = datetime.strptime(date_of_death_str, '%Y-%m-%d').date() if date_of_death_str else None
 
             author = Author(name=name, birth_date=birth_date, date_of_death=date_of_death)
             db.session.add(author)
@@ -77,7 +81,10 @@ def add_author():
     return render_template('add_author.html')
 
 def is_valid_isbn(isbn):
-    # Remove hyphens and spaces
+    """
+    Validates whether a given ISBN is valid (ISBN-10 or ISBN-13).
+    Returns True if valid, False otherwise.
+    """
     isbn = isbn.replace('-', '').replace(' ', '')
 
     if len(isbn) == 10:
@@ -88,6 +95,9 @@ def is_valid_isbn(isbn):
         return False
 
 def is_valid_isbn10(isbn):
+    """
+    Validates an ISBN-10 string.
+    """
     if len(isbn) != 10:
         return False
     total = 0
@@ -102,20 +112,27 @@ def is_valid_isbn10(isbn):
     return total % 11 == 0
 
 def is_valid_isbn13(isbn):
+    """
+    Validates an ISBN-13 string.
+    """
     if len(isbn) != 13 or not isbn.isdigit():
         return False
     total = 0
     for i, char in enumerate(isbn):
         num = int(char)
-        if i % 2 == 0:
-            total += num
-        else:
-            total += num * 3
+        total += num if i % 2 == 0 else num * 3
     return total % 10 == 0
 
-# Route to add a book
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+    """
+    Route to add a new book.
+    Validates ISBN before saving. Requires:
+    - isbn (str)
+    - title (str)
+    - publication_year (int)
+    - author_id (int)
+    """
     if request.method == 'POST':
         isbn = request.form['isbn']
         title = request.form['title']
@@ -143,6 +160,10 @@ def add_book():
 
 @app.route('/book/<int:book_id>/delete', methods=['POST'])
 def delete_book(book_id):
+    """
+    Route to delete a book by its ID.
+    If the associated author has no more books, deletes the author too.
+    """
     try:
         book = Book.query.get_or_404(book_id)
         author = book.author
